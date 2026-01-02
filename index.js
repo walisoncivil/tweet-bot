@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
+const fetch = require("node-fetch");
 const OAuth = require('oauth-1.0a');
 const crypto = require('crypto');
 
@@ -35,18 +36,25 @@ async function postTweet(content) {
     )
   );
 
-  const response = await axios.post(
-    url,
-    { text: content },
-    {
+    const response = await fetch(url, {
+      method: 'POST',
       headers: {
         ...authHeader,
         'Content-Type': 'application/json'
-      }
-    }
-  );
+      },
+      body: JSON.stringify({
+        text: content
+      })
+    });
 
-  return response.data;
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`HTTP ${response.status}: ${err}`);
+    }
+
+
+  data = await response.json();
+  return data;
 }
 
 /* 🔑 Endpoint n8n will call */
